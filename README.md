@@ -1,7 +1,7 @@
 # beepFade
 Adds a new fading effect for the Golang Beep library
-### How to use
-## Fading streamer
+## How to use
+### Fading streamer
 ```go
 // Create the set of parameters for it's stream function
 // TimeSpan is how many samples to fade-in for, and then how many samples before the end to fade out for. It is set to 9 seconds here.
@@ -11,9 +11,9 @@ var faderStream = &fader{Streamer: s, Volume: 1, TimeSpan: float64(format.Sample
 // Create streamer with fading applied
 changedStreamer := beep.StreamerFunc(faderStream.Stream)
 ```
-## Crossfade between songs
+### Crossfade between songs
 ```go
 // You can use this high level function to crossfade between songs (must be mp3 right now)
-streamCreater("song1.mp3", "song2.mp3")
-// This will fade into song1, and then crossfade between song1 and song2, and then fade out of song2
+streamer := crossfadeStream("song1.mp3", "song2.mp3")
+// This streamer fade into song1, and then crossfade between song1 and song2, and then fade out of song2
 ```
