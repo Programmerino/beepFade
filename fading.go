@@ -7,7 +7,6 @@ import (
 
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/mp3"
-	"github.com/faiface/beep/speaker"
 )
 
 // Holds fadeItter and trackItter
@@ -38,7 +37,7 @@ func init() {
 }
 
 // Crossfades between all songs specified in files
-func streamCreater(files ...string) {
+func crossfadeStream(files ...string) beep.Streamer {
 	// Streamer that will contain all files
 	var streamer beep.Streamer
 	// Create 1000 samples of silence so that beep.Mix has a non-nil streamer to work with
@@ -76,16 +75,7 @@ func streamCreater(files ...string) {
 		// Set last time span to current time span for next file
 		lastTimeSpan = faderStream.TimeSpan
 	}
-	// Initialize speaker
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-	// Create done channel so that program doesn't exit before all songs are played
-	done := make(chan struct{})
-	// Play streamer (doesn't belong here)
-	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
-		close(done)
-	})))
-	// Wait until done is closed
-	<-done
+	return streamer
 }
 
 // Stream edits streamer so that it fades
