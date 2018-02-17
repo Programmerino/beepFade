@@ -13,7 +13,7 @@ changedStreamer := beep.StreamerFunc(faderStream.Stream)
 ```
 ### Crossfade between songs
 ```go
-// You can use this high level function to crossfade between songs (must be mp3 right now)
-streamer := crossfadeStream("song1.mp3", "song2.mp3")
-// This streamer fade into song1, and then crossfade between song1 and song2, and then fade out of song2
+// You can use this high level function to crossfade between streams
+streamer := crossfadeStream(stream1, stream2)
+// This streamer will fade into stream1, and then crossfade between stream1 and stream2, and then fade out of stream2
 ```
