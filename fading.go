@@ -2,11 +2,9 @@ package beepFade
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/faiface/beep"
-	"github.com/faiface/beep/mp3"
 )
 
 // Holds fadeItter and trackItter
@@ -37,7 +35,7 @@ func init() {
 }
 
 // Crossfades between all songs specified in files
-func crossfadeStream(streams ...beep.Streamer) beep.Streamer {
+func CrossfadeStream(streams ...beep.StreamSeekCloser) beep.Streamer {
 	// Streamer that will contain all files
 	var streamer beep.Streamer
 	// Create 1000 samples of silence so that beep.Mix has a non-nil streamer to work with
