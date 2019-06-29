@@ -2,6 +2,7 @@ package beepFade
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/faiface/beep"
@@ -34,8 +35,23 @@ func init() {
 	itters = make(map[int][]float64)
 }
 
-// Crossfades between all songs specified in files
-func CrossfadeStream(streams ...beep.StreamSeekCloser) beep.Streamer {
+// Options for the CrossfadeSream function
+type Options struct {
+	TimeSpan time.Duration // How long to fade in, and to fade out
+	Volume   float64       // What the volume should be for the streamer
+}
+
+// CrossfadeStream crossfades between all songs specified in files
+// The sample-rates between the two streams must be the same, otherwise weird things might happen
+// If opts is nil, then reasonable defaults are used
+func CrossfadeStream(format beep.Format, opts *Options, streams ...beep.StreamSeekCloser) beep.Streamer {
+	timeSpan := time.Second * 9
+	volume := 1.0
+	if opts != nil {
+		timeSpan = opts.TimeSpan
+		volume = opts.Volume
+	}
+
 	// Streamer that will contain all files
 	var streamer beep.Streamer
 	// Create 1000 samples of silence so that beep.Mix has a non-nil streamer to work with
@@ -44,12 +60,10 @@ func CrossfadeStream(streams ...beep.StreamSeekCloser) beep.Streamer {
 	var lastTimeSpan float64
 	// Specifies how long the streamer is, so that timing for crossfading is correct
 	var position float64
-	// Used so that speaker.Init has valid values for SampleRate, etc. Probably not a good idea if the SampleRates are different between files
-	var format beep.Format
 	// Iterate through all files specified to add them to streamer with proper crossfade
 	for id, stream := range streams {
 		// Create the set of parameters for it's stream function
-		var faderStream = &fader{Streamer: stream, Volume: 1, TimeSpan: float64(format.SampleRate.N(time.Second * 9)), audioLength: float64(stream.Len()), id: id}
+		var faderStream = &fader{Streamer: stream, Volume: volume, TimeSpan: float64(format.SampleRate.N(timeSpan)), audioLength: float64(stream.Len()), id: id}
 		// Create streamer with fading applied
 		changedStreamer := beep.StreamerFunc(faderStream.Stream)
 		// Create amount of silence before playing sound. Uses position, which by itself would make it play after the previous song. Subtracting lastTimeSpan makes a crossfade effect
@@ -61,6 +75,7 @@ func CrossfadeStream(streams ...beep.StreamSeekCloser) beep.Streamer {
 		// Set last time span to current time span for next file
 		lastTimeSpan = faderStream.TimeSpan
 	}
+
 	return streamer
 }
 
@@ -82,8 +97,10 @@ func (v *fader) Stream(samples [][2]float64) (n int, ok bool) {
 	var trackItter = &itters[v.id][1]
 	// Use default streamer, and revise off of that
 	n, ok = v.Streamer.Stream(samples)
-	var gain float64
-	gain = v.Volume
+	// Set gain to 0 if math.Pow fails
+	gain := 0.0
+	// Make gain work with the volume
+	gain = math.Pow(1, v.Volume)
 	// x1 is 0 and represents the start of the fade
 	var x1 float64
 	// The start of the fade should be silent, so y1 is 0
