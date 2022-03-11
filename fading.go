@@ -29,8 +29,12 @@ type fader struct {
 	id int
 }
 
-// For testing fading capabilities
 func init() {
+	EmptyItters()
+}
+
+// For testing fading capabilities
+func EmptyItters() {
 	// Necessary for itters map, otherwise there is a nil map error
 	itters = make(map[int][]float64)
 }
@@ -44,7 +48,7 @@ type Options struct {
 // CrossfadeStream crossfades between all songs specified in files
 // The sample-rates between the two streams must be the same, otherwise weird things might happen
 // If opts is nil, then reasonable defaults are used
-func CrossfadeStream(format beep.Format, opts *Options, streams ...beep.StreamSeekCloser) beep.Streamer {
+func CrossfadeStream(format beep.Format, opts *Options, streams ...beep.StreamSeeker) beep.Streamer {
 	timeSpan := time.Second * 9
 	volume := 1.0
 	if opts != nil {
